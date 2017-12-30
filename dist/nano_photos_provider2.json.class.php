@@ -211,6 +211,7 @@ class galleryJSON
       
       // general settings
       $this->config['contentFolder']          = $config['config']['contentFolder'];
++     $this->config['thumbnailFolder']          = $config['config']['thumbnailFolder'];
       $this->config['fileExtensions']         = $config['config']['fileExtensions'];
       $this->config['sortOrder']              = strtoupper($config['config']['sortOrder']);
       $this->config['titleDescSeparator']     = $config['config']['titleDescSeparator'];
@@ -375,13 +376,13 @@ class galleryJSON
         return '';
       }
 
-      if (!file_exists( $baseFolder . '_thumbnails' )) {
-        mkdir( $baseFolder . '_thumbnails', 0755, true );
-      }
+      $thumnailFullFolder=$this->config['thumbnailFolder'].'/'.$baseFolder;
+       if (!file_exists( $thumnailFullFolder )) {
+         mkdir( $thumnailFullFolder , 0755, true );
+       }
 
-      
-      $lowresFilename = $baseFolder . '_thumbnails/' . $filename;
-      
+       $lowresFilename = $thumnailFullFolder . $filename;
+
       if (file_exists($lowresFilename)) {
         if( filemtime($lowresFilename) > filemtime($baseFolder . $filename) ) {
           // original image file is older as the image use for display
@@ -468,8 +469,10 @@ class galleryJSON
      * @param type $filename
      * @return type
      */
-    protected function GetThumbnail2( $baseFolder, $filename )
+    protected function GetThumbnail2( $baseFolder, $filename,$original=false )
     {
+
+      $thumnailFullFolder=$this->config['thumbnailFolder'].'/'.$baseFolder;
 
       $s  = array( 'xs',   'sm',   'me',   'la',   'xl'  );
       $sw = array( 'wxs',  'wsm',  'wme',  'wla',  'wxl' );
@@ -478,8 +481,9 @@ class galleryJSON
 
         $pi=pathinfo($filename);
         $tn= $pi['filename'] . '_' . $this->tn_size[$sw[$i]] . '_' . $this->tn_size[$sh[$i]] . '.' . $pi['extension'];
-        if ( $this->GenerateThumbnail2($baseFolder, $filename, $tn, $this->tn_size[$sw[$i]], $this->tn_size[$sh[$i]], $i ) == true ) {
-          $this->currentItem->t_url[$i]= $this->CustomEncode($baseFolder . '_thumbnails/' . $tn);
+ 
+        if (!$original &&  $this->GenerateThumbnail2($baseFolder, $filename, $tn, $this->tn_size[$sw[$i]], $this->tn_size[$sh[$i]], $i ) == true ) {
+          $this->currentItem->t_url[$i]= $this->CustomEncode($thumnailFullFolder . $tn);
         }
         else {
           // fallback: original image (no thumbnail)
@@ -581,13 +585,16 @@ class galleryJSON
      */
     protected function GenerateThumbnail2($baseFolder, $imagefilename, $thumbnailFilename, $thumbWidth, $thumbHeight, $s)
     {
-      if (!file_exists( $baseFolder . '_thumbnails' )) {
-        mkdir( $baseFolder . '_thumbnails', 0755, true );
-      }
+
+      $thumnailFullFolder=$this->config['thumbnailFolder'].'/'.$baseFolder;
+      if (!file_exists( $thumnailFullFolder)) {
+        mkdir( $thumnailFullFolder, 0755, true );
+       }
         
       $generateThumbnail = true;
-      if (file_exists($baseFolder . '_thumbnails/' . $thumbnailFilename)) {
-        if( filemtime($baseFolder . '_thumbnails/' . $thumbnailFilename) > filemtime($baseFolder.$imagefilename) ) {
+      if (file_exists($thumnailFullFolder . $thumbnailFilename)) {
+        if( filemtime($thumnailFullFolder . $thumbnailFilename) > filemtime($baseFolder.$imagefilename) ) {
+      
           // image file is older as the thumbnail file
           $generateThumbnail=false;
         }
@@ -598,7 +605,7 @@ class galleryJSON
         $generateDominantColors=false;
       }
       else {
-        $generateDominantColors= ! $this->GetDominantColors($baseFolder . $imagefilename, $baseFolder . '_thumbnails/' . $thumbnailFilename . '.data');
+        $generateDominantColors= ! $this->GetDominantColors($baseFolder . $imagefilename, $thumnailFullFolder . $thumbnailFilename . '.data');
       }
      
       $size = getimagesize($baseFolder . $imagefilename);
@@ -682,13 +689,13 @@ class galleryJSON
       if( $generateThumbnail == true ) {
         switch ($size['mime']) {
           case 'image/jpeg':
-            imagejpeg($thumb, $baseFolder . '/_thumbnails/' . $thumbnailFilename, $this->config['thumbnails']['jpegQuality'] );
+            imagejpeg($thumb, $thumnailFullFolder . $thumbnailFilename, $this->config['thumbnails']['jpegQuality'] );
             break;
           case 'image/gif':
-            imagegif($thumb, $baseFolder . '/_thumbnails/' . $thumbnailFilename);
+            imagegif($thumb, $thumnailFullFolder . $thumbnailFilename);
             break;
           case 'image/png':
-            imagepng($thumb, $baseFolder . '/_thumbnails/' . $thumbnailFilename, 1);
+            imagepng($thumb, $thumnailFullFolder . $thumbnailFilename, 1);
             break;
         }
       }
@@ -712,7 +719,7 @@ class galleryJSON
         $this->currentItem->dc= $hex;
 
         // save to cache
-        $fdc = fopen($baseFolder . '_thumbnails/' . $thumbnailFilename . '.data', 'w');
++       $fdc = fopen($thumnailFullFolder . $thumbnailFilename . '.data', 'w');
         if( $fdc ) { 
           fwrite($fdc, 'dc=' . $hex . "\n");
           fwrite($fdc, 'dcGIF=' . base64_encode( $image_data ));
