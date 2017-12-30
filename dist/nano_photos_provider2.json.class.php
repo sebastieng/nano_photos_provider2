@@ -118,8 +118,7 @@ class galleryJSON
             if ($filename != '.' &&
                     $filename != '..' &&
                     $filename != '_thumbnails' &&
-                    strpos($filename, $this->config['ignoreDetector']) == false && 
-                    !empty($files) )
+                    strpos($filename, $this->config['ignoreDetector']) == false)
             {
               $lstAlbums[] = $this->PrepareData($filename, 'ALBUM');
             }
@@ -285,7 +284,46 @@ class galleryJSON
         return $baseFolder . $i;
       }
 
-      return '';
+      return $this->createAlbumCover($baseFolder);
+    }
+
+
+    protected function createAlbumCover($baseFolder)
+    {
+
+      $string = basename($baseFolder);
+
+      $thumnailFullFolder=$this->config['thumbnailFolder'].'/'.$baseFolder;
+
+      if (!file_exists( $thumnailFullFolder)) {
+        mkdir( $thumnailFullFolder, 0755, true );
+      }
+
+      $coverPath= $thumnailFullFolder . 'cover.png';
+
+      if (!file_exists(!coverPath)) {
+         $imw=200;
+         $imh=200;
+         $font=5;
+         while(strlen($string) *  imagefontwidth($font) + 20 > $imw){
+            $font--;
+         }
+
+         $im = imagecreate(200, 200); // image size 200x200px
+         imagecolorallocate($im, 0, 0, 0); // background white
+         $text_color = imagecolorallocate($im, 255, 255, 255); // text color black
+
+         imagestring($im, $font, ($imw - strlen($string) *  imagefontwidth($font))/2,
+                      100, $string, $text_color); // append string to image
+
+         header('Content-type: image/png'); // filetype
+         imagepng($im,  $coverPath); // save as image.png
+         imagedestroy($im); // free up memory
+
+      }  
+
+      $this->GetThumbnail2( $thumnailFullFolder, 'cover.png', true);
+      return $coverPath ;
     }
 
     /**
@@ -917,8 +955,7 @@ class galleryJSON
             if ($filename != '.' &&
                     $filename != '..' &&
                     $filename != '_thumbnails' &&
-                    strpos($filename, $this->config['ignoreDetector']) == false && 
-                    !empty($filename) )
+                    strpos($filename, $this->config['ignoreDetector']) == false )
             {
               $cnt++;
             }
