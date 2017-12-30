@@ -106,7 +106,7 @@ class galleryJSON
                     $filename != '..' &&
                     $filename != '_thumbnails' &&
                     preg_match("/\.(" . $this->config['fileExtensions'] . ")*$/i", $filename) &&
-                    strpos($filename, $this->config['ignoreDetector']) == false )
+                    strpos($filename, $this->config['ignoreDetector']) === false )
             {
               $lstImages[] = $this->PrepareData($filename, 'IMAGE');
             }
@@ -118,7 +118,7 @@ class galleryJSON
             if ($filename != '.' &&
                     $filename != '..' &&
                     $filename != '_thumbnails' &&
-                    strpos($filename, $this->config['ignoreDetector']) == false)
+                    strpos($filename, $this->config['ignoreDetector']) === false)
             {
               $lstAlbums[] = $this->PrepareData($filename, 'ALBUM');
             }
@@ -215,7 +215,7 @@ class galleryJSON
       $this->config['sortOrder']              = strtoupper($config['config']['sortOrder']);
       $this->config['titleDescSeparator']     = $config['config']['titleDescSeparator'];
       $this->config['albumCoverDetector']     = $config['config']['albumCoverDetector'];
-      $this->config['ignoreDetector']         = strtoupper($config['config']['ignoreDetector']);
+      $this->config['ignoreDetector']         = $config['config']['ignoreDetector'];
 
       // memory usage
       if( $config['memory']['unlimited'] == true ) {
@@ -944,8 +944,8 @@ class galleryJSON
                     $filename != '..' &&
                     $filename != '_thumbnails' &&
                     preg_match("/\.(" . $this->config['fileExtensions'] . ")*$/i", $filename) &&
-                    strpos($filename, $this->config['ignoreDetector']) == false &&
-                    strpos($filename, $this->config['albumCoverDetector']) == false )
+                    strpos($filename, $this->config['ignoreDetector']) === false &&
+                    strpos($filename, $this->config['albumCoverDetector']) === false )
             {
               $cnt++;
             }
@@ -955,7 +955,7 @@ class galleryJSON
             if ($filename != '.' &&
                     $filename != '..' &&
                     $filename != '_thumbnails' &&
-                    strpos($filename, $this->config['ignoreDetector']) == false )
+                    strpos($filename, $this->config['ignoreDetector']) === false )
             {
               $cnt++;
             }
