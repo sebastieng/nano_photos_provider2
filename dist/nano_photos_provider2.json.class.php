@@ -818,7 +818,7 @@ class galleryJSON
      * @param boolean $isImage
      * @return \item
      */
-    protected function GetMetaData($filename, $isImage)
+    protected function GetMetaData($folder , $filename, $isImage)
     {
       $f=$filename;
   
@@ -840,10 +840,20 @@ class galleryJSON
         // only title
         if ($isImage) {
           $oneItem->title = $this->CustomEncode($filename);  //(preg_replace('/.[^.]*$/', '', $filename));
+
+          getimagesize($folder . $f,$info);
+          $exif= iptcparse ($info["APP13"] );
+          if (!empty($exif['2#120'])) 
+            $oneItem->description = $exif['2#120'][0];//Caption
+          elseif  (!empty($exif['2#105'])) 
+            $oneItem->description = $exif['2#105'][0];//Headline
+          else
+            $oneItem->description = '';
         } else {
           $oneItem->title = $this->CustomEncode($filename);
+          $oneItem->description = '';
         }
-        $oneItem->description = '';
+
       }
 
       $oneItem->title = str_replace($this->config['albumCoverDetector'], '', $oneItem->title);   // filter cover detector string
@@ -980,7 +990,7 @@ class galleryJSON
       if ( $kind == 'IMAGE' ) {
         // ONE IMAGE
         $this->currentItem->kind            = 'image';
-        $e = $this->GetMetaData($filename, true);
+        $e = $this->GetMetaData($this->data->fullDir,$filename, true);
         $this->currentItem->title           = $e->title;
         $this->currentItem->description     = $e->description;
         // $this->currentItem->src             = rawurlencode($this->CustomEncode($this->config['contentFolder'] . $this->album . '/' . $filename));
@@ -1007,7 +1017,7 @@ class galleryJSON
         // ONE ALBUM
         $this->currentItem->kind            = 'album';
 
-        $e = $this->GetMetaData($filename, false);
+        $e = $this->GetMetaData($this->data->fullDir,$filename, false);
         $this->currentItem->title           = $e->title;
         $this->currentItem->description     = $e->description;
 
